@@ -1,0 +1,21 @@
+{
+  "name": "osu-recent-plays-stats",
+  "version": "1.0.0",
+  "description": "Archive recent osu plays in an SQL database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
+  },
+  "keywords": [
+    "osu!"
+  ],
+  "author": "Matt Kleiner",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "json2csv": "^4.5.4",
+    "request": "^2.88.2"
+  }
+}
