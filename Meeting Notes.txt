@@ -1,0 +1,23 @@
+Date 3/4/2020
+Meeting Notes:
+
+Server Side:
+- Server will be collecting data and storing to database every time interval (ex. every 5 mins)
+- Issue: Osu! API 12,000 requests per minute limit --> Limits to 6,000 users
+- Solution: User authenticates each time to request data collection
+- API returns csv files
+- Will need server endpoint to return JSON conversion of data to client 
+
+Client Side:
+- Requests data for specific user and pulls data from 
+- Visualizations for stats will be displayed to UI (possibly use d3.js)
+	Ideas:
+	- BAR GRAPHS for comparing against other players
+	- BOX PLOT for Accuracy from Specific Map
+- Important fields from data:
+	- Maxcombos, Accuracy, Counts, etc.
+
+Roles (Main Focus):
+- Matt K. = Server-side JS and database 
+- Jonathan / Matt G. = UI Interface (HTML, CSS) and client-side (JS)
+- Kathrina = User-authentication / Assist Matt K.  with server side

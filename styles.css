@@ -1,0 +1,88 @@
+body{
+	font-family:Roboto,Helvetica,"sans-serif";
+	font-weight: bold;
+	background-color: #5C9D9F;
+	
+}
+
+#logo{
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+	height: auto;
+}
+
+#title{
+	text-align: center;
+	color: white;
+	font-size: 40px;
+}
+
+#credits{
+	text-align: center;
+	color: #C3CAD8;
+	font-size: 16px;
+}
+
+#container{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	color: white;
+}
+
+#userInfo {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	text-align: center;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+
+#messages{
+	color: #C13D50;
+}
+
+
+#buttons{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	color: white;
+}
+
+.statsButton{
+	background-color: #C13D50;
+	border: none;
+	border-radius: 10px;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	font-size: 16px;
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+.statCard {
+	background-color: #DC98A4;
+	border-style: solid;
+	border-color: white;
+	border-width: thick;
+	border-radius: 20px;
+	color: white;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	padding: 16px 16px;
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	text-align: center;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 90%;
+}
