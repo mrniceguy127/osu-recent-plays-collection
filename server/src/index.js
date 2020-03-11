@@ -7,6 +7,8 @@ const express = require("express");
 const request = require("request");
 const { Parser } = require("json2csv");
 
+const initSQLServer = require("./init-sql");
+
 const osuAPIKey = process.env.OSU_API_KEY;
 
 const statusCodes = {
@@ -19,6 +21,12 @@ const statusCodes = {
   INT_SERVER_ERR: 500
 };
 
+// SQL Connection
+let connection = initSQLServer();
+
+// Function to start recent plays download interval
+let startDLInterval = require('./recent-plays-dl-interval');
+startDLInterval(connection);
 
 let app = express()
 
