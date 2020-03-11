@@ -2,7 +2,7 @@
 let stats = document.getElementById("stats");		// Where stats, graphics, cards will be displayed
 let userInfo = document.getElementById("userInfo");	// Where user name and other relavent info will be displayed
 let messages = document.getElementById("messages");	// Where messages get displayed
-let username = "TestUser123"	// PLACEHOLDER. Eventually the username will be recieved when user logs in
+let username = "TestUser123";	// PLACEHOLDER. Eventually the username will be recieved when user logs in
 
 // Function for getting stats from most recent games 
 function getRecent(){
@@ -70,29 +70,44 @@ function getRecent(){
 	xhttp.send(); // Send Request
 } 
 
-// TODO: Complete  getAccuracy() function to plot accuracy over time over all provided data 
-function getAccuracy(){
-	stats.innerHTML = "";
-	userInfo.innerHTML = username;
-	messages.style.display="block";
-	messages.innerHTML = "Fetching Accuracy Information for user: " + username;
-	setTimeout(function(){messages.style.display="none";}, 5000);
+// getAccuracy() function to plot accuracy over time for specif beat map (ignoring failed maps)
+function getMapAccuracy(){
+	stats.innerHTML = "";								// Clear stats div
+	userInfo.innerHTML = username;						// Show username
+	let mapID = document.getElementById("mapID");		// Import mapID field from DOM
+	
+	if(mapID.value.length === 0){	// If user did not enter a beatmap ID, prompt the user to do so.
+		messages.style.display="block";
+		messages.innerHTML = "Please enter a osu! beatmap ID!";
+		return;
+	}
+	else{
+		messages.style.display="block";
+		messages.innerHTML = "Fetching Accuracy Information for user: " + username;
+		setTimeout(function(){messages.style.display="none";}, 5000);
+	}
+	
 	let xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if(xhttp.readyState == 4 && xhttp.status == 200) {
 			let json = JSON.parse(xhttp.responseText);
-			messages.innerHTML = "Stats for user " + username + " OBTAINED";
-			let accuracyRecord = []; // Y
-			let dateRecord = [];   // X
+			messages.innerHTML = username + "'s stats for beatmap ID " + mapID.value + " OBTAINED";
+			let accuracyRecord = []; // Y values for plot
+			let dateRecord = [];   	 // X vlaues for plot
 			
 			//PLACEHOLDER until plotting is done: Displaying all stored Dates and Accuracies in single stat card
 			let accuracyCard = document.createElement("div"); // A new "statCard" object for holding a game's stats is created 
 			accuracyCard.setAttribute('class', 'statCard');	 // Set its class so it gets appropriate styles
+			accuracyCard.setAttribute('id', 'accuracyCard');
+			
+			let mapStatsCard = document.createElement("div"); // A new "statCard" object for holding a game's stats is created 
+			mapStatsCard.setAttribute('class', 'statCard');	 // Set its class so it gets appropriate styles
+			
 			
 			for (let i=0; i < json.length; i++){
 				let rank = json[i].rank; 
-				if(rank !== 'F'){ // If Rank for game is F, do not include in accuracy plot
-					console.log("got it!");
+				let beatmapID = json[i].beatmap_id;
+				if(rank !== 'F' && beatmapID === mapID.value){ // If Rank for game is F, do not include in accuracy plot
 					let count50 = parseInt(json[i].count50);
 					let count100 = parseInt(json[i].count100);
 					let count300 = parseInt(json[i].count300);
@@ -102,14 +117,90 @@ function getAccuracy(){
 					// PLAN: Plot Accuracies on the y-axis
 					accuracyRecord.push(accuracy); 
 					let date = json[i].date; 	   // PLAN: Plot Dates on x-axis
-					dateRecord.push(date);
-						
-					// PLACEHOLDER until plotting is done: store all dates and accuracies as text in card
-					accuracyCard.innerHTML += date + ": " + accuracy + "%<br>";
+					dateRecord.push(date);	
 				}
 			}
 			
+			if (accuracyRecord < 1){
+				messages.style.display="block";
+				messages.innerHTML = "No accuracy data exists for Beatmap ID '" + mapID.value + "'.";
+				setTimeout(function(){messages.style.display="none";}, 5000);
+				return;
+			}
+			// Gathering stats for specific beatmap
+			let leastRecentPlay = dateRecord[0];
+			let mostRecentPlay = dateRecord[dateRecord.length - 1];
+			let timesPlayed = dateRecord.length;
+			
+			let minAccuracy = Math.min.apply(Math, accuracyRecord);
+			let minAccDate = dateRecord[accuracyRecord.indexOf(minAccuracy)];
+			let maxAccuracy = Math.max.apply(Math, accuracyRecord);
+			let maxAccDate = dateRecord[accuracyRecord.indexOf(maxAccuracy)];
+			
+			let sum = 0;
+			for (let i = 0; i < accuracyRecord.length; i++){
+				sum += accuracyRecord[i];
+			}
+			let averageAccuracy = sum / accuracyRecord.length;
+			
+			// Using Plotly to plot Accuracy (y-axis) vs. Time (x-axis) as scatter plot
+			line = { 
+				x: dateRecord,
+				y: accuracyRecord,
+				name: 'Accuracy Over Time',
+				mode: 'markers',
+				type: 'scatter'
+			};
+			
+			let data = [line];
+			let layout = {
+			  title: {
+				text:'Accuracy Over Time',
+				font: {
+				  family: 'Courier New, monospace',
+				  size: 18
+				},
+				xref: 'paper',
+				x: 0.05,
+			 },
+			  xaxis: {
+				title: {
+				  text: 'Date Played',
+				  font: {
+					family: 'Courier New, monospace',
+					size: 18,
+					color: '#7f7f7f'
+				  }
+				},
+			  },
+			  yaxis: {
+				title: {
+				  text: 'Accuracy (%)',
+				  font: {
+					family: 'Courier New, monospace',
+					size: 18,
+					color: '#7f7f7f'
+				  }
+				}
+			  }
+			};
+			
+			let config = {responsive: false}
+			
 			stats.appendChild(accuracyCard);   		// Append stat card to DOM stats div
+			Plotly.newPlot('accuracyCard', data, layout, config); // Plotly will insert plot into accuracyCard div
+			
+			// String variable to hold extra stat information for specific beatmap
+			let stat ="<span style='color:#35324C; font-weight:bold;'>Beatmap ID: " + mapID.value + "</span><br><br>" +
+				"Most Recent Play: " + mostRecentPlay + "<br>" + 
+				"Least Recent Play: " + leastRecentPlay + "<br>" +
+				"Times Completed: " + timesPlayed + "<br><br>" +
+				"Average Accuracy: " + averageAccuracy + "%<br><br>" +
+				"Best Play: " + maxAccuracy + "% on " + maxAccDate + "<br>" +
+				"Worst Play: " + minAccuracy + "% on " + minAccDate + "<br>";
+				
+			mapStatsCard.innerHTML = stat;			// set stat card's innerHTML to the stat text
+			stats.appendChild(mapStatsCard);   		// Append stat card to DOM stats div
 		}
 	}
 	let URL = "./getstats";
