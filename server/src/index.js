@@ -6,6 +6,7 @@
 const express = require("express");
 const request = require("request");
 const { Parser } = require("json2csv");
+const SqlString = require('sqlstring');
 
 const initSQLServer = require("./init-sql");
 
@@ -37,11 +38,20 @@ app.get('/', (req, res) => {
 // Get csv of most recent plays
 app.get('/recentplays/csv/:username', (req, res) => {
   const username = req.params.username;
-  getRecentPlaysFromOsu(username)
+  getUserRecentData(username)
   .then((data) => {
-    const csv = csvFromRecentPlays(data);
-    res.set('Content-Type', 'text/csv');
-    res.status(statusCodes.OK).send(csv);
+    if (data) {
+      res.set('Content-Type', 'text/csv');
+      if (data.length !== 0) {
+        const csv = csvFromRecentPlays(data);
+        res.status(statusCodes.OK).send(csv);
+      } else {
+        const csvHeader = `"beatmap_id","score","maxcombo","count50","count100","count300","countmiss","countkatu","countgeki","perfect","enabled_mods","user_id","date","rank"`;
+        res.status(statusCodes.OK).send(csvHeader);
+      }
+    } else {
+      res.status(statusCodes.BAD_REQ).send("osu! player not found on osu! servers.");
+    }
   })
   .catch((err) => {
     res.status(statusCodes.INT_SERVER_ERR).send(err.stack);
@@ -51,10 +61,14 @@ app.get('/recentplays/csv/:username', (req, res) => {
 
 app.get('/recentplays/json/:username', (req, res) => {
   const username = req.params.username;
-  getRecentPlaysFromOsu(username)
+  getUserRecentData(username)
   .then((data) => {
-    const json = simplifyRecentPlaysJSON(data);
-    res.json(json);
+    if (data) {
+      const json = simplifyRecentPlaysJSON(data);
+      res.json(json);
+    } else {
+      res.status(statusCodes.BAD_REQ).send("osu! player not found on osu! servers.");
+    }
   })
   .catch((err) => {
     res.status(statusCodes.INT_SERVER_ERR).send(err.message);
@@ -74,6 +88,55 @@ app.get('/beatmap/:id', (req, res) => {
     console.error(err.stack);
   });
 })
+
+async function getUserRecentData(username) {
+  return new Promise((res, rej) => {
+    const query = `SELECT * FROM UsersTracked WHERE username=${SqlString.escape(username)}`;
+    connection.query(query, (err, users, fields) => {
+      if (err) rej(err);
+      else {
+        if (users.length === 0) {
+          const osuReqURL = `https://osu.ppy.sh/api/get_user?k=${osuAPIKey}&u=${username}&type=string`;
+          request(osuReqURL, (err, osuRes, body) => {
+            if (err) rej(err);
+            else if (osuRes.statusCode === 200) {
+              const usersFound = JSON.parse(body);
+              if (usersFound.length !== 0) {
+                const user = usersFound[0];
+                const insertValues = [
+                  user.user_id,
+                  user.username,
+                  new Date()
+                ];
+                const sanitizedValues = insertValues.map(val => SqlString.escape(val));
+                const insertQuery = `INSERT INTO UsersTracked (user_id, username, date_added) VALUES (${sanitizedValues.join(', ')})`;
+                connection.query(insertQuery, (err, results, fields) => {
+                  if (err) rej(err);
+                  else {
+                    res([]);
+                  }
+                });
+              } else {
+                res(); // User does not appear to exist on osu!'s servers, so we have no data.
+              }
+            } else {
+              rej(new Error('Bad status code from osu!'));
+            }
+          });
+        } else {
+          const user = users[0];
+          const userId = user.user_id;
+          connection.query(`SELECT * FROM RecentPlays WHERE user_id=${userId}`, (err, recents, fields) => {
+            if (err) rej(err);
+            else {
+              res(recents);
+            }
+          });
+        }
+      }
+    });
+  });
+}
 
 async function getBeatmapDataFromOsu(bmid) {
   return new Promise((res, rej) => {
