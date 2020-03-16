@@ -31,6 +31,8 @@ startDLInterval(connection);
 
 let app = express()
 
+app.use('/static', express.static('./src/public'));
+
 app.get('/', (req, res) => {
   res.send("Hello, osu! player!")
 });
@@ -129,7 +131,26 @@ async function getUserRecentData(username) {
           connection.query(`SELECT * FROM RecentPlays WHERE user_id=${userId}`, (err, recents, fields) => {
             if (err) rej(err);
             else {
-              res(recents);
+              res(recents.map((play) => {
+                let formatted = {
+                  id: play.id + '',
+                  beatmap_id: play.beatmap_id + '',
+                  score: play.score + '',
+                  maxcombo: play.maxcombo + '',
+                  count50: play.count50 + '',
+                  count100: play.count100 + '',
+                  count300: play.count300 + '',
+                  countmiss: play.countmiss + '',
+                  countkatu: play.countkatu + '',
+                  countgeki: play.countgeki + '',
+                  perfect: play.perfect[0] + '',
+                  enabled_mods: play.enabled_mods + '',
+                  user_id: play.user_id + '',
+                  date: play.date,
+                  rank: play.rank
+                }
+                return formatted;
+              }));
             }
           });
         }

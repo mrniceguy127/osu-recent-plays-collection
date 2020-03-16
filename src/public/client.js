@@ -2,10 +2,25 @@
 let stats = document.getElementById("stats");		// Where stats, graphics, cards will be displayed
 let userInfo = document.getElementById("userInfo");	// Where user name and other relavent info will be displayed
 let messages = document.getElementById("messages");	// Where messages get displayed
-let username = "mrniceguy127";	// PLACEHOLDER. Eventually the username will be recieved when user logs in
+//let username = "";	// PLACEHOLDER. Eventually the username will be recieved when user logs in
+let usernameInput = document.getElementById('osuUsername');
+
+function getUsername() {
+  return usernameInput.value;
+}
+
+function downloadCSV() {
+  const username = getUsername();
+  let csvURL = `/recentplays/csv/${username}`;
+  if (username !== "") { // I don't like dealing with falsey values. -Matt
+    window.open(csvURL, '_blank');
+  }
+}
 
 // Function for getting stats from most recent games 
 function getRecent(){
+        let username = getUsername();
+        if (username === "") return;
 	let numGames = document.getElementById("numGames"); // number input filed from DOM
 	stats.innerHTML = "";			// Clear the stats div to restet it
 	userInfo.innerHTML = username;	// Display user name in userInfo div
@@ -72,6 +87,8 @@ function getRecent(){
 
 // getAccuracy() function to plot accuracy over time for specif beat map (ignoring failed maps)
 function getMapAccuracy(){
+        let username = getUsername();
+        if (username === "") return;
 	stats.innerHTML = "";								// Clear stats div
 	userInfo.innerHTML = username;						// Show username
 	let mapID = document.getElementById("mapID");		// Import mapID field from DOM
