@@ -1,6 +1,9 @@
 # osu-recent-plays-collection
 osu! data collection for recent plays.
 
+
+Install modules with:
+`npm i`
 Run code with:
 `npm start`
 
