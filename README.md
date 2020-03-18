@@ -1,6 +1,9 @@
 # osu-recent-plays-collection
 osu! data collection for recent plays.
 
+Run code with:
+`npm start`
+
 # Environment Variables
 
 - **OSU_API_KEY**: The osu! API key to retrieve data with
