@@ -128,5 +128,6 @@ async function getRecentPlaysFromOsu(user, userSearchType="string") {
 
 function toUnixTimestamp(date) {
   const dateMilli = Date.parse(date);
+  const dateSec = Math.floor(dateMilli / 1000);
   return dateMilli;
 }

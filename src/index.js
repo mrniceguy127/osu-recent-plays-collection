@@ -22,7 +22,7 @@ const statusCodes = {
   INT_SERVER_ERR: 500
 };
 
-// SQL Connection
+ // SQL Connection
 let connection = initSQLServer();
 
 // Function to start recent plays download interval
@@ -215,4 +215,4 @@ function simplifyRecentPlaysJSON(data) {
   return data; // **CURRENTLY** modifying nothing.
 }
 
-app.listen(3000)
+app.listen(process.env.PORT || 3000)
